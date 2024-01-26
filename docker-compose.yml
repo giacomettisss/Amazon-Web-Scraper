@@ -1,0 +1,30 @@
+
+version: '3.1'
+
+services:
+
+  db:
+    image: mariadb:10.6.16-focal
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_DATABASE: example
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+
+  phpmyadmin:
+    image: phpmyadmin:5.2.1-apache
+    depends_on:
+      - db
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+    restart: always
+    ports:
+      - "8099:80"
+
+volumes:
+  db_data:
