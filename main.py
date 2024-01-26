@@ -5,7 +5,7 @@ from db.database_connection import DatabaseConnection
 from db.price_inserter import PriceInserter
 from db.book_manager import BookManager
 from config.settings import db_config
-from scraper.book_scraper_v3 import AmazonScraper
+from scraper.book_scraper import AmazonScraper
 import logging
 from db.book import Book
 
@@ -30,16 +30,20 @@ async def main():
     scraper.heatup()
     print('Heated up')
     for book in books:
-        scraper.navigate_to_page(book.url)
-        data = await scraper.extract_data()
-        logging.info(f'Data from {book.url}:')
-        logging.info(data)
-        print(f'{data = }')
-        logging.info('---')
-        inserter.insert_price(book.book_id, data['price_kindle'])
+        logging.info(f'Scraping: {book.book_id = } | {book.url}')
+        print(f'{book.book_id = } | {book.url}')
 
-    # for _ in range(0,33):
-    #     inserter.insert_price(2, _)
+        scraper.navigate_to_page(book.url)
+
+        data = await scraper.extract_data()
+        logging.info(f'{data = }')
+        print(f'{data = }')
+
+        inserter.insert_prices(book.book_id, data)
+
+        logging.info('---')
+        print('---')
+
     scraper.close()
     logging.info('Ending')
 
