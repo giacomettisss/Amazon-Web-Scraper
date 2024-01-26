@@ -26,5 +26,14 @@ services:
     ports:
       - "8099:80"
 
+  scraper:
+    build: .
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+    volumes:
+      - "./data:/usr/src/app/data"
 volumes:
   db_data:
