@@ -97,37 +97,3 @@ class AmazonScraper:
 
     def close(self):
         self.driver.quit()
-
-# def main():
-#     """Função principal que orquestra o processo de scraping."""
-#     scraper = AmazonScraper()
-#     try:
-#         scraper.heatup()
-#         for url in urls:
-#             scraper.navigate_to_page(url)
-#             data = scraper.extract_data()
-#             print(f'Data from {url}:')
-#             print(data)
-#             print('---')
-#     finally:
-#         scraper.close()
-
-
-# urls = [
-#     'https://www.amazon.com.br/Designing-Data-Intensive-Applications-Reliable-Maintainable-ebook/dp/B06XPJML5D',
-#     'https://www.amazon.com.br/Fundamentals-Data-Engineering-English-Reis-ebook/dp/B0B4VH4T37',
-#     'https://www.amazon.com.br/Data-Pipelines-Pocket-Reference-Processing-ebook/dp/B08WGSM9CJ',
-#     'https://www.amazon.com.br/Learning-Spark-Lightning-Fast-Analytics-English-ebook/dp/B08F9WVFCT',
-#     'https://www.amazon.com.br/Staff-Engineers-Path-English-ebook/dp/B0BG16Y553',
-#     'https://www.amazon.com.br/Staff-Engineer-Leadership-management-English-ebook/dp/B08RMSHYGG',
-#     'https://www.amazon.com.br/Learning-Domain-Driven-Design-English-Khononov-ebook/dp/B09J2CMJZY',
-#     'https://www.amazon.com.br/Building-Event-Driven-Microservices-Leveraging-Organizational-ebook/dp/B08C9V1FC9'
-# ]
-
-# if __name__ == "__main__":
-#     main()
-
-
-# scraper = AmazonScraper()
-# scraper.heatup()
-# scraper.navigate_to_page(urls[0])
