@@ -10,11 +10,11 @@ import logging
 from db.book import Book
 
 # logging.basicConfig(level=logging.PRODUTION)
-# logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.DEBUG)
+logging.getLogger('selenium').setLevel(logging.WARNING)
+logging.getLogger('urllib3').setLevel(logging.WARNING)
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
 
-
-
-async def main():
+def main():
     logging.info('Starting')
     
     db_connection = DatabaseConnection(db_config)
@@ -24,28 +24,27 @@ async def main():
     book_manager = BookManager(db_connection)
     inserter = PriceInserter(db_connection)
 
-    books = book_manager.get_all_books()
-    print(f'Getten {len(books)} books')    
-
+    logging.info('Heating up')
     scraper.heatup()
-    print('Heated up')
+    logging.info('Heated up')
+    
+    books = book_manager.get_all_books()
+    logging.info(f'Getten {len(books)} books')    
+
     for book in books:
         logging.info(f'Scraping: {book.book_id = } | {book.url}')
-        print(f'{book.book_id = } | {book.url}')
 
         scraper.navigate_to_page(book.url)
 
-        data = await scraper.extract_data()
+        data = scraper.extract_data()
         logging.info(f'{data = }')
-        print(f'{data = }')
 
         inserter.insert_prices(book.book_id, data)
 
         logging.info('---')
-        print('---')
 
     scraper.close()
     logging.info('Ending')
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()

@@ -1,6 +1,7 @@
 # book_manager.py
 
 import pymysql
+import logging
 from .book import Book
 
 class BookManager:
@@ -15,5 +16,5 @@ class BookManager:
                     result = cursor.fetchall()
                     return [Book(*row) for row in result]
             except pymysql.MySQLError as e:
-                print(f"Erro ao buscar os livros: {e}")
+                logging.info(f"Erro ao buscar os livros: {e}")
                 return []

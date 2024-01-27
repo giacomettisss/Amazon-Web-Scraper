@@ -4,89 +4,68 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options  # Importe Options
+from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.common.exceptions import TimeoutException
-import time
-import asyncio
-import logging
-import re
 from decimal import Decimal
-
-# logging.basicConfig(level=logging.DEBUG)
-# logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.DEBUG)
-
+import time
+import re
+import logging
 
 class AmazonScraper:
-    EXPLICIT_WAIT = 2
-    SLEEP_TIME = 3
+    EXPLICIT_WAIT = 0
+    SLEEP_TIME_HEAT_UP = 5
+    PRICE_XPATHS = {
+        'kindle': '//*[@id="tmm-grid-swatch-KINDLE"]//span[2]//span',
+        'paperback': '//*[@id="tmm-grid-swatch-PAPERBACK"]//span[2]//span',
+        'hardcover': '//*[@id="tmm-grid-swatch-HARDCOVER"]//span[2]//span',
+        'audio': '//*[@id="tmm-grid-swatch-AUDIO_DOWNLOAD"]//span[2]//span',
+    }
 
     def __init__(self):
-        """Inicializa o AmazonScraper com um webdriver configurado para rodar em modo headless e com logs reduzidos."""
         chrome_options = Options()
         chrome_options.add_argument("--headless")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_argument('window-size=1920x1080')
         chrome_options.add_argument("--log-level=3")
-
+        
         chrome_service = ChromeService(ChromeDriverManager().install())
 
         self.driver = webdriver.Chrome(service=chrome_service, options=chrome_options)
         self.wait = WebDriverWait(self.driver, self.EXPLICIT_WAIT)
     
-    def navigate_to_page(self, url):
-        """Navega até uma URL específica."""
+    def navigate_to_page(self, url, time_sleep=0):
+        logging.info(f'Navigating to {url}')
         self.driver.get(url)
-        time.sleep(self.SLEEP_TIME)  # Pequena pausa para garantir que a página carregue
+        time.sleep(time_sleep) 
     
-    async def get_element_text_async(self, xpath):
-        """Versão assíncrona de get_element_text."""
+    def get_element_text(self, xpath):
         try:
-            element = await asyncio.to_thread(
-                self.wait.until,
+            return self.wait.until(
                 EC.presence_of_element_located((By.XPATH, xpath))
-            )
-            return element.text
+            ).text
         except TimeoutException:
-            print(f"Elemento não encontrado: {xpath}")
+            print(f"Element not found: {xpath}")
             return None 
     
-    async def extract_price_kindle(self):
-        return await self.get_element_text_async('//*[@id="tmm-grid-swatch-KINDLE"]//span[2]//span')
+    def extract_price(self, price_type):
+        xpath = self.PRICE_XPATHS.get(price_type)
+        if not xpath:
+            print(f"Invalid price type: {price_type}")
+            return None
+        return self.get_element_text(xpath)
     
-    async def extract_price_paperback(self):
-        return await self.get_element_text_async('//*[@id="tmm-grid-swatch-PAPERBACK"]//span[2]//span')
-    
-    async def extract_price_hardcover(self):
-        return await self.get_element_text_async('//*[@id="tmm-grid-swatch-HARDCOVER"]//span[2]//span')
-    
-    async def extract_price_audio(self):
-        return await self.get_element_text_async('//*[@id="tmm-grid-swatch-AUDIO_DOWNLOAD"]//span[2]//span')
-
-    async def extract_data(self):
-        """Extrai os dados da página do produto na Amazon de forma assíncrona."""
-        price_kindle, price_paperback, price_hardcover, price_audio = await asyncio.gather(
-            self.extract_price_kindle(),
-            self.extract_price_paperback(),
-            self.extract_price_hardcover(),
-            self.extract_price_audio()
-        )
-        return {
-            'price_kindle': self.convert_price_to_number(price_kindle),
-            'price_paperback': self.convert_price_to_number(price_paperback),
-            'price_hardcover': self.convert_price_to_number(price_hardcover),
-            'price_audio': self.convert_price_to_number(price_audio),
+    def extract_data(self):
+        data = {
+            'price_kindle': self.convert_price_to_number(self.extract_price('kindle')),
+            'price_paperback': self.convert_price_to_number(self.extract_price('paperback')),
+            'price_hardcover': self.convert_price_to_number(self.extract_price('hardcover')),
+            'price_audio': self.convert_price_to_number(self.extract_price('audio')),
         }
+        return data
     
-    def heatup(self):
-        self.navigate_to_page('https://www.google.com.br')
-        self.navigate_to_page('https://www.google.com/search?q=amazon')
-        self.navigate_to_page('https://www.amazon.com.br')
-
-
     def convert_price_to_number(self, price_str):
-        """Converte a string do preço em um número de ponto flutuante."""
         if price_str is None:
             return None
         try:
@@ -97,9 +76,58 @@ class AmazonScraper:
                 return Decimal(str(price))
             return None
         except ValueError:
-            print(f"Não foi possível converter o preço: {price_str}")
+            logging.info(f"Error converting the price: {price_str}")
             return None
-        
+    
+    def heatup(self):
+        self.navigate_to_page('https://www.google.com.br', self.SLEEP_TIME_HEAT_UP)
+        self.navigate_to_page('https://www.google.com/search?q=youtube', self.SLEEP_TIME_HEAT_UP)
+        self.navigate_to_page('https://www.youtube.com', self.SLEEP_TIME_HEAT_UP)
+        self.navigate_to_page('https://www.youtube.com/watch?v=ABotmndh6ro&list=RDABotmndh6ro&start_radio=1&ab_channel=TROPADOBRUXO', self.SLEEP_TIME_HEAT_UP)
+        self.navigate_to_page('https://www.google.com.br', self.SLEEP_TIME_HEAT_UP)
+        self.navigate_to_page('https://www.google.com/search?q=g1', self.SLEEP_TIME_HEAT_UP)
+        self.navigate_to_page('https://g1.globo.com/', self.SLEEP_TIME_HEAT_UP)
+        self.navigate_to_page('https://www.google.com.br', self.SLEEP_TIME_HEAT_UP)
+        self.navigate_to_page('https://www.google.com/search?q=amazon', self.SLEEP_TIME_HEAT_UP)
+        self.navigate_to_page('https://www.amazon.com.br', self.SLEEP_TIME_HEAT_UP)
+
+    def print_source_code(self):
+        source_code = self.driver.page_source
+        logging.info(source_code)
+
     def close(self):
-        """Fecha o webdriver."""
         self.driver.quit()
+
+# def main():
+#     """Função principal que orquestra o processo de scraping."""
+#     scraper = AmazonScraper()
+#     try:
+#         scraper.heatup()
+#         for url in urls:
+#             scraper.navigate_to_page(url)
+#             data = scraper.extract_data()
+#             print(f'Data from {url}:')
+#             print(data)
+#             print('---')
+#     finally:
+#         scraper.close()
+
+
+# urls = [
+#     'https://www.amazon.com.br/Designing-Data-Intensive-Applications-Reliable-Maintainable-ebook/dp/B06XPJML5D',
+#     'https://www.amazon.com.br/Fundamentals-Data-Engineering-English-Reis-ebook/dp/B0B4VH4T37',
+#     'https://www.amazon.com.br/Data-Pipelines-Pocket-Reference-Processing-ebook/dp/B08WGSM9CJ',
+#     'https://www.amazon.com.br/Learning-Spark-Lightning-Fast-Analytics-English-ebook/dp/B08F9WVFCT',
+#     'https://www.amazon.com.br/Staff-Engineers-Path-English-ebook/dp/B0BG16Y553',
+#     'https://www.amazon.com.br/Staff-Engineer-Leadership-management-English-ebook/dp/B08RMSHYGG',
+#     'https://www.amazon.com.br/Learning-Domain-Driven-Design-English-Khononov-ebook/dp/B09J2CMJZY',
+#     'https://www.amazon.com.br/Building-Event-Driven-Microservices-Leveraging-Organizational-ebook/dp/B08C9V1FC9'
+# ]
+
+# if __name__ == "__main__":
+#     main()
+
+
+# scraper = AmazonScraper()
+# scraper.heatup()
+# scraper.navigate_to_page(urls[0])
