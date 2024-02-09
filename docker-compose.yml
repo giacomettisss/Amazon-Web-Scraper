@@ -28,7 +28,7 @@ services:
       - "8099:80"
 
   scraper:
-    build: .
+    build: ./Scraper_Project
     depends_on:
       - db
     environment:

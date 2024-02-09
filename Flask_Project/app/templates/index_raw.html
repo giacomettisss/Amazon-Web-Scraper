@@ -1,0 +1,46 @@
+<!-- app/templates/index.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Books Monitor</title>
+    <!-- Adicionando o Bootstrap para estilização -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Books :D</h1>
+        <table class="table table-bordered table-hover">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Id</th>
+                    <th>Type</th>
+                    <th>Price</th>
+                    <th>Title</th>
+                    <th>Url</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dado in dados %}
+                    <tr>
+                        <td>{{ dado['book_id'] }}</td>
+                        <td>{{ dado['price_type'] }}</td>
+                        <td>{{ dado['price'] }}</td>
+                        <td>{{ dado['title'] }}</td>
+                        <td>{{ dado['url'] }}</td>
+                        <td>{{ dado['date_checked'] }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <!-- Opcional: Adicionar o JavaScript do Bootstrap -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.4.6/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

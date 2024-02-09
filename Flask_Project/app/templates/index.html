@@ -1,0 +1,47 @@
+<!-- app/templates/index.html -->
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Site Flask</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Amazon Scraper</h1>
+        <table class="table">
+            <!-- Cabeçalho da tabela -->
+            <tr>
+                <!-- <th>Id</th> -->
+                <th>Actual Price</th>
+                <th>Max Price</th>
+                <th>Is it Worth</th>
+                <th>Discount</th>
+                <th>Title</th>
+                <th>Url</th>
+                <!-- <th>Type</th> -->
+                <!-- <th>Date</th> -->
+            </tr>
+            <!-- Dados da tabela -->
+            {% for dado in dados %}
+                <tr>
+                    <!-- <td>{{ dado['book_id'] }}</td> -->
+                    <td>R$ {{ dado['actual_price'] }}</td>
+                    <td>R$ {{ dado['max_price'] }}</td>
+                    <td>{{ dado['is_it_worth'] }}</td>
+                    <td>{{ dado['discount'] }}</td>
+                    <td>{{ dado['title'] }}</td>
+                    <td>{{ dado['url'] }}</td>
+                    <!-- <td>{{ dado['price_type'] }}</td> -->
+                    <!-- <td>{{ dado['date_checked'] }}</td> -->
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>
